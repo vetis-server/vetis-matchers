@@ -18,13 +18,6 @@ Add this to your `Cargo.toml`:
 vetis-matchers = "0.1.1-beta.2"
 ```
 
-### Runtime Features
-
-Choose the appropriate runtime feature for your project:
-
-- `runtime-tokio` (default): Use with Tokio runtime
-- `runtime-smol`: Use with Smol runtime
-
 ## Configuration
 
 ### Using API
@@ -38,39 +31,31 @@ Configure matchers file serving using the builder pattern:
 ### vetis.yaml
 
 ```yaml
-type: matchers_path
-uri: /matchers
-extensions: \.(html|css|js|png|jpg)$
-directory: ./public
-index_files: [index.html]
-cache:
-    max_file_size: 10485760
-    ttl: 60s
-    tti: 10s
-    capacity: 1000
+server:
+  hosts:
+    - hostname: "localhost"
+      hooks:
+        - name: "your_hook"
+          matcher:
+            type: "path"
+            paths:
+              - "/api*"
 ```
 
 ### Configuration Options
 
-#### StaticHookConfig
+#### PathMatcherConfig
 
-- **uri**: The URI prefix for serving matchers files (required)
+- **matcher**: If set, this hook will be only called if request meet the criteria defined by him, otherwise, all requests will call this hook (optional)
 - **extensions**: Comma-separated list of file extensions to serve (required)
 - **directory**: The filesystem directory containing matchers files (required)
 - **index_files**: Optional list of index file names to serve for directory requests
-- **cache**: Optional cache configuration
 
 ## Runtime-Specific Modules
 
 Based on your selected runtime feature, import the appropriate module:
 
 ```rust
-// For Tokio runtime
-#[cfg(feature = "runtime-tokio")]
-use vetis_matchers::tokio;
-
-// For Smol runtime
-#[cfg(feature = "runtime-smol")]
 use vetis_matchers::smol;
 ```
 
