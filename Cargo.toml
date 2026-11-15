@@ -21,14 +21,10 @@ default = []
 [dependencies]
 cel = "0.16.0"
 compact_str = { version = "0.10.0", features = ["serde", "smallvec"] }
-duration-str = "0.21.0"
 http = "1.5.0"
-hyper-body-utils = "0.1.18"
-minimime = "1.0.0"
 regex = "1.12.4"
 serde = { version = "1.0.228", features = ["derive"] }
 simplematch = "0.3.1"
-time = "0.3.55"
 typetag = "0.2.21"
 vetis = { path = "../vetis/vetis" }
 

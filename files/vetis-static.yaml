@@ -5,7 +5,7 @@ server:
   workers: 1
   log:
     dest: "stdout"
-    log_level: "error" 
+    log_level: "error"
   hosts:
     - hostname: "localhost"
       root_directory: "."
@@ -23,15 +23,9 @@ server:
           - "h2"
       error_pages:
         404: "404.html"
-      paths:
-        - type: "static"
-          uri: "/"
+      hooks:
+        - name: "static"
           directory: "files"
           extensions: "\\.(html)$"
-          cache:
-            max_file_size: 10485760
-            ttl: "5m"
-            tti: "2m"
-            capacity: 1000
           index_files:
             - "index.html"
