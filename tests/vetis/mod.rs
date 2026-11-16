@@ -29,7 +29,7 @@ pub struct VetisConfig {
 
 #[tokio::test]
 async fn test_from_file() -> VetisTestResult<()> {
-    let config_path = Path::new("files/vetis-static.yaml");
+    let config_path = Path::new("files/public/vetis-static.yaml");
     if config_path.exists() {
         let file = read_to_string(&config_path).await;
         if let Ok(file) = file {
