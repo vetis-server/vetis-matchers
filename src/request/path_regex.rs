@@ -2,32 +2,21 @@ use cel::{Context, Env, Program, Value::Bool};
 use compact_str::ToCompactString;
 use serde::{Deserialize, Serialize};
 use std::{fmt::Debug, sync::Arc};
-use vetis::{VetisResult, errors::VetisError, matcher::Matcher};
+use vetis::{Str, VetisResult, errors::VetisError, matcher::Matcher};
 
 /// Matcher config builder
-pub struct MatcherConfigBuilder {
-    field: String,
-    value: String,
+pub struct MatcherConfigBuilder<'a> {
+    pattern: &'a str,
 }
 
-impl MatcherConfigBuilder {
-    /// Allow set a field
+impl<'a> MatcherConfigBuilder<'a> {
+    /// Allow set a pattern
     ///
     /// # Returns
     ///
     /// * `Self` - The builder.
-    pub fn field(mut self, field: &str) -> Self {
-        self.field = field.into();
-        self
-    }
-
-    /// Allow set a value
-    ///
-    /// # Returns
-    ///
-    /// * `Self` - The builder.
-    pub fn value(mut self, value: &str) -> Self {
-        self.value = value.into();
+    pub fn pattern(mut self, pattern: &'a str) -> Self {
+        self.pattern = pattern;
         self
     }
 
@@ -37,7 +26,11 @@ impl MatcherConfigBuilder {
     ///
     /// * `VetisResult<MatcherConfig>` - The `MatcherConfig` with the configured settings.
     pub fn build(self) -> VetisResult<MatcherConfig> {
-        Ok(MatcherConfig { field: self.field, value: self.value })
+        Ok(MatcherConfig {
+            pattern: self
+                .pattern
+                .to_compact_string(),
+        })
     }
 }
 
@@ -50,8 +43,7 @@ impl MatcherConfigBuilder {
 /// * `replacement` - The replacement uri.
 /// ```
 pub struct MatcherConfig {
-    field: String,
-    value: String,
+    pattern: Str,
 }
 
 impl ToString for MatcherConfig {
@@ -62,9 +54,8 @@ impl ToString for MatcherConfig {
 
 impl Debug for MatcherConfig {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_tuple("header")
-            .field(&self.field)
-            .field(&self.value)
+        f.debug_tuple("path_regex")
+            .field(&self.pattern)
             .finish()
     }
 }
@@ -86,26 +77,17 @@ impl MatcherConfig {
     /// # Returns
     ///
     /// * `MatcherConfigBuilder` - The builder.
-    pub fn builder() -> MatcherConfigBuilder {
-        MatcherConfigBuilder { field: "HOST".into(), value: "localhost".into() }
+    pub fn builder<'a>() -> MatcherConfigBuilder<'a> {
+        MatcherConfigBuilder { pattern: "/api/,*" }
     }
 
-    /// Return field
+    /// Return pattern
     ///
     /// # Returns
     ///
-    /// * `&String` - Header field.
-    pub fn field(&self) -> &str {
-        &self.field
-    }
-
-    /// Return value
-    ///
-    /// # Returns
-    ///
-    /// * `&String` - Header value.
-    pub fn value(&self) -> &str {
-        &self.value
+    /// * `&String` - Path pattern.
+    pub fn pattern(&self) -> &str {
+        &self.pattern
     }
 }
 

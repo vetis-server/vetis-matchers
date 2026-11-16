@@ -1,13 +1,12 @@
-use std::sync::Arc;
-
 use cel::{Context, Env, Program, Value::Bool};
 use compact_str::ToCompactString;
 use serde::{Deserialize, Serialize};
-use vetis::{VetisResult, errors::VetisError, matcher::Matcher};
+use std::sync::Arc;
+use vetis::{Str, VetisResult, errors::VetisError, matcher::Matcher};
 
 /// Matcher config builder
 pub struct MatcherConfigBuilder {
-    paths: Vec<String>,
+    paths: Vec<Str>,
 }
 
 impl MatcherConfigBuilder {
@@ -18,7 +17,7 @@ impl MatcherConfigBuilder {
     /// * `Self` - The builder.
     pub fn add_path(mut self, path: &str) -> Self {
         self.paths
-            .push(path.to_owned());
+            .push(path.to_compact_string());
         self
     }
 
@@ -28,7 +27,11 @@ impl MatcherConfigBuilder {
     ///
     /// * `VetisResult<MatcherConfig>` - The `MatcherConfig` with the configured settings.
     pub fn build(self) -> VetisResult<MatcherConfig> {
-        Ok(MatcherConfig { paths: self.paths })
+        Ok(MatcherConfig {
+            paths: self
+                .paths
+                .into_boxed_slice(),
+        })
     }
 }
 
@@ -41,7 +44,7 @@ impl MatcherConfigBuilder {
 /// * `replacement` - The replacement uri.
 /// ```
 pub struct MatcherConfig {
-    paths: Vec<String>,
+    paths: Box<[Str]>,
 }
 
 #[typetag::serde(name = "path")]
@@ -69,8 +72,8 @@ impl MatcherConfig {
     ///
     /// # Returns
     ///
-    /// * `&String` - Header field.
-    pub fn paths(&self) -> &Vec<String> {
+    /// * `&Box<[Str]> ` - Header field.
+    pub fn paths(&self) -> &Box<[Str]> {
         &self.paths
     }
 
@@ -79,7 +82,7 @@ impl MatcherConfig {
     /// # Returns
     ///
     /// * `&Vec<String>` - List of paths.
-    pub fn paths_mut(&mut self) -> &mut Vec<String> {
+    pub fn paths_mut(&mut self) -> &mut Box<[Str]> {
         &mut self.paths
     }
 }

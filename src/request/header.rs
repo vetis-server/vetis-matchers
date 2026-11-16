@@ -1,33 +1,40 @@
-use std::{fmt::Debug, sync::Arc};
-
 use cel::{Context, Env, Program, Value::Bool};
 use compact_str::ToCompactString;
 use serde::{Deserialize, Serialize};
-use vetis::{VetisResult, errors::VetisError, matcher::Matcher};
+use std::{fmt::Debug, sync::Arc};
+use vetis::{Str, VetisResult, errors::VetisError, matcher::Matcher};
 
 /// Matcher config builder
-pub struct MatcherConfigBuilder {
-    field: String,
-    value: String,
+pub struct MatcherConfigBuilder<'a> {
+    field: &'a str,
+    value: &'a str,
 }
 
-impl MatcherConfigBuilder {
+impl<'a> MatcherConfigBuilder<'a> {
     /// Allow set a field
+    ///
+    /// # Arguments
+    ///
+    /// * `&str` = Field name
     ///
     /// # Returns
     ///
     /// * `Self` - The builder.
-    pub fn field(mut self, field: &str) -> Self {
+    pub fn field(mut self, field: &'a str) -> Self {
         self.field = field.into();
         self
     }
 
     /// Allow set a value
     ///
+    /// # Arguments
+    ///
+    /// * `&str` = Field value
+    ///
     /// # Returns
     ///
     /// * `Self` - The builder.
-    pub fn value(mut self, value: &str) -> Self {
+    pub fn value(mut self, value: &'a str) -> Self {
         self.value = value.into();
         self
     }
@@ -38,7 +45,14 @@ impl MatcherConfigBuilder {
     ///
     /// * `VetisResult<MatcherConfig>` - The `MatcherConfig` with the configured settings.
     pub fn build(self) -> VetisResult<MatcherConfig> {
-        Ok(MatcherConfig { field: self.field, value: self.value })
+        Ok(MatcherConfig {
+            field: self
+                .field
+                .to_compact_string(),
+            value: self
+                .value
+                .to_compact_string(),
+        })
     }
 }
 
@@ -51,8 +65,8 @@ impl MatcherConfigBuilder {
 /// * `value` - The replacement uri.
 /// ```
 pub struct MatcherConfig {
-    field: String,
-    value: String,
+    field: Str,
+    value: Str,
 }
 
 impl ToString for MatcherConfig {
@@ -87,8 +101,8 @@ impl MatcherConfig {
     /// # Returns
     ///
     /// * `MatcherConfigBuilder` - The builder.
-    pub fn builder() -> MatcherConfigBuilder {
-        MatcherConfigBuilder { field: "HOST".into(), value: "localhost".into() }
+    pub fn builder<'a>() -> MatcherConfigBuilder<'a> {
+        MatcherConfigBuilder { field: "HOST", value: "localhost" }
     }
 
     /// Return field

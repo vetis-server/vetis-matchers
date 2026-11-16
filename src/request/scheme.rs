@@ -1,8 +1,7 @@
-use std::{fmt::Debug, sync::Arc};
-
 use cel::{Context, Env, Program, Value::Bool};
 use compact_str::ToCompactString;
 use serde::{Deserialize, Serialize};
+use std::{fmt::Debug, sync::Arc};
 use vetis::{Str, VetisResult, errors::VetisError, matcher::Matcher};
 
 /// Matcher config builder

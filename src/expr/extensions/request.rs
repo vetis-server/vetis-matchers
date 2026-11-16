@@ -175,6 +175,7 @@ fn path(request: &CelMap, args: &CelList) -> CelBool {
     }
 }
 
+#[allow(dead_code)]
 fn path_regex(request: &CelMap, args: &CelList) -> CelBool {
     if let Some((_, val)) = request.get_key_value(&CelMapKey::String("path".into())) {
         let Some(val) = val.downcast_ref::<CelString>() else { return CelBool::FALSE };
