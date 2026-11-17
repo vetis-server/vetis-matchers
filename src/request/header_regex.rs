@@ -109,7 +109,7 @@ impl MatcherConfig {
     ///
     /// # Returns
     ///
-    /// * `&String` - Header field.
+    /// * `&str` - Header field.
     pub fn field(&self) -> &str {
         &self.field
     }
@@ -118,7 +118,7 @@ impl MatcherConfig {
     ///
     /// # Returns
     ///
-    /// * `&String` - Header value.
+    /// * `&str` - Header value.
     pub fn value(&self) -> &str {
         &self.value
     }

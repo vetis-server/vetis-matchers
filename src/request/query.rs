@@ -13,6 +13,10 @@ pub struct MatcherConfigBuilder<'a> {
 impl<'a> MatcherConfigBuilder<'a> {
     /// Allow set a param
     ///
+    /// # Arguments
+    ///
+    /// * `param` - A query param to match
+    ///
     /// # Returns
     ///
     /// * `Self` - The builder.
@@ -22,6 +26,10 @@ impl<'a> MatcherConfigBuilder<'a> {
     }
 
     /// Allow set a value
+    ///
+    /// # Arguments
+    ///
+    /// * `value` - A value param to match
     ///
     /// # Returns
     ///
@@ -53,7 +61,7 @@ impl<'a> MatcherConfigBuilder<'a> {
 ///
 /// # Fields
 ///
-/// * `param` - Target uri to regex to matchw with.
+/// * `param` - Target uri to regex to match with.
 /// * `value` - The replacement uri.
 /// ```
 pub struct MatcherConfig {
@@ -101,7 +109,7 @@ impl MatcherConfig {
     ///
     /// # Returns
     ///
-    /// * `&String` - Query param.
+    /// * `&str` - Query param.
     pub fn param(&self) -> &str {
         &self.param
     }
@@ -110,7 +118,7 @@ impl MatcherConfig {
     ///
     /// # Returns
     ///
-    /// * `&String` - Header value.
+    /// * `&str` - Header value.
     pub fn value(&self) -> &str {
         &self.value
     }
