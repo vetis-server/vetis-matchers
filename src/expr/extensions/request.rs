@@ -8,7 +8,8 @@ use cel::{
             ListExpr, LiteralValue, SelectExpr,
             operators::{LOGICAL_NOT, LOGICAL_OR, NOT_STRICTLY_FALSE},
         },
-        types::{CelBool, CelList, CelMap, CelMapKey, CelString},
+        types::{CelBool, CelList, CelMap, CelMapKey, CelString, Kind},
+        value::Val,
     },
     parser::{Macro, MacroExprHelper},
 };
@@ -42,6 +43,10 @@ impl Library for Request {
         env.add_macro(Macro::global_var_arg("method", |helper, _, args| {
             extreme(helper, "request", args, "method", "req.@method")
         }))?;
+        add_overload!(env, fn header: (CelMap, CelString, CelString) -> CelBool, name = "req.@header")?;
+        env.add_macro(Macro::global_var_arg("header", |helper, _, args| {
+            extreme(helper, "request", args, "header", "req.@header")
+        }))?;
         add_overload!(env, fn scheme: (CelMap, CelList) -> CelBool, name = "req.@scheme")?;
         env.add_macro(Macro::global_var_arg("scheme", |helper, _, args| {
             extreme(helper, "request", args, "scheme", "req.@scheme")
@@ -53,6 +58,10 @@ impl Library for Request {
         add_overload!(env, fn path: (CelMap, CelList) -> CelBool, name = "req.@path")?;
         env.add_macro(Macro::global_var_arg("path", |helper, _, args| {
             extreme(helper, "request", args, "path", "req.@path")
+        }))?;
+        add_overload!(env, fn query: (CelMap, CelMap) -> CelBool, name = "req.@query")?;
+        env.add_macro(Macro::global_var_arg("query", |helper, _, args| {
+            extreme(helper, "request", args, "query", "req.@query")
         }))?;
 
         Ok(())
@@ -143,6 +152,41 @@ pub fn method(request: &CelMap, args: &CelList) -> CelBool {
     contains(request, args, "method")
 }
 
+/// Check if request header field has this value using regex
+pub fn header_regex(request: &CelMap, field: &CelString, value: &CelString) -> CelBool {
+    if let Some((_, val)) = request.get_key_value(&CelMapKey::String("headers".into())) {
+        let Some(map) = val.downcast_ref::<CelMap>() else { return CelBool::FALSE };
+        if let Some(header) = map.get(&CelMapKey::String(field.to_owned()))
+            && let Some(header_value) = header.downcast_ref::<CelString>()
+        {
+            let Ok(regex) = Regex::new(value.inner()) else { return CelBool::FALSE };
+            regex
+                .is_match(header_value.inner())
+                .into()
+        } else {
+            CelBool::FALSE
+        }
+    } else {
+        CelBool::FALSE
+    }
+}
+
+/// Check if request header field has this value
+pub fn header(request: &CelMap, field: &CelString, value: &CelString) -> CelBool {
+    if let Some((_, val)) = request.get_key_value(&CelMapKey::from("headers")) {
+        let Some(map) = val.downcast_ref::<CelMap>() else { return CelBool::FALSE };
+        if let Some(header) = map.get(&CelMapKey::from(field.inner()))
+            && let Some(header_value) = header.downcast_ref::<CelString>()
+        {
+            dowild(value.as_bytes(), header_value.as_bytes()).into()
+        } else {
+            CelBool::FALSE
+        }
+    } else {
+        CelBool::FALSE
+    }
+}
+
 /// Check if request host is any of the arguments of this function
 pub fn host(request: &CelMap, args: &CelList) -> CelBool {
     contains(request, args, "host")
@@ -159,7 +203,7 @@ pub fn version(request: &CelMap, args: &CelList) -> CelBool {
 }
 
 fn path(request: &CelMap, args: &CelList) -> CelBool {
-    if let Some((_, val)) = request.get_key_value(&CelMapKey::String("path".into())) {
+    if let Some((_, val)) = request.get_key_value(&CelMapKey::from("path")) {
         let Some(val) = val.downcast_ref::<CelString>() else { return CelBool::FALSE };
         args.iter()
             .any(|path| {
@@ -177,13 +221,51 @@ fn path(request: &CelMap, args: &CelList) -> CelBool {
 
 #[allow(dead_code)]
 fn path_regex(request: &CelMap, args: &CelList) -> CelBool {
-    if let Some((_, val)) = request.get_key_value(&CelMapKey::String("path".into())) {
+    if let Some((_, val)) = request.get_key_value(&CelMapKey::from("path")) {
         let Some(val) = val.downcast_ref::<CelString>() else { return CelBool::FALSE };
         args.iter()
             .any(|path| {
                 if let Some(path) = path.downcast_ref::<CelString>() {
                     let Ok(regex) = Regex::new(path) else { return false };
                     regex.is_match(val)
+                } else {
+                    false
+                }
+            })
+            .into()
+    } else {
+        CelBool::FALSE
+    }
+}
+
+fn query(request: &CelMap, query: &CelMap) -> CelBool {
+    if let Some((_, val)) = request.get_key_value(&CelMapKey::from("query")) {
+        let Some(val) = val.downcast_ref::<CelString>() else { return CelBool::FALSE };
+        val.split("&")
+            .any(|pair| {
+                let Some((key, value)) = pair.split_once('=') else { return false };
+                if let Some((_, query_val)) = query.get_key_value(&CelMapKey::from(key)) {
+                    match query_val
+                        .get_type()
+                        .kind()
+                    {
+                        Kind::List => {
+                            if let Some(list) = query_val.downcast_ref::<CelList>() {
+                                let val: Box<dyn Val> = Box::new(CelString::from(value));
+                                list.contains(&val)
+                            } else {
+                                false
+                            }
+                        }
+                        Kind::String => {
+                            if let Some(pattern) = query_val.downcast_ref::<CelString>() {
+                                dowild(pattern.as_bytes(), value.as_bytes())
+                            } else {
+                                false
+                            }
+                        }
+                        _ => false,
+                    }
                 } else {
                     false
                 }
