@@ -18,38 +18,103 @@ Add this to your `Cargo.toml`:
 vetis-matchers = "0.1.1-beta.2"
 ```
 
-## Configuration
+## Matchers
 
-### Using API
+### Client Ip
+
+- **ranges**: A list of paths to match request uri against to (required)
+
+### Expression
+
+- **expression**: A list of paths to match request uri against to (required)
+
+### Header
+
+- **field**: Header field name (required)
+- **value**: Header field value (required)
+
+### Header Regex
+
+- **field**: Header field name (required)
+
+### Method
+
+- **verbs**: A list of paths to match request uri against to (required)
+
+### Path
+
+Path matcher allow route request based on request uri path.
+
+Below you have some configuration options:
+
+- **paths**: A list of paths to match request uri against to (required)
+
+### Path Regex
+
+- **pattern**: A regex pattern to match request path against to (required)
+
+### Query
+
+- **param**: A list of paths to match request uri against to (required)
+- **value**: Value pattern
+
+### Scheme
+
+- **protos**: A list of paths to match request uri against to (required)
+
+### URL Pattern
+
+- **scheme**: A list of paths to match request uri against to (required)
+
+### Version
+
+- **specs**: A list of paths to match request uri against to (required)
+
+### Examples
+
+#### Using API
 
 Configure matchers file serving using the builder pattern:
 
 ```rust,ignore
+use vetis_matchers::request::{PathMatcher, PathMatcherConfig};
 
+PathMatcher::new(
+  PathMatcherConfig::builder()
+    .add_path("/api*")
+    .add_path("/healthz")
+    .build()?
+);
 ```
 
-### vetis.yaml
+#### vetis.yaml
 
 ```yaml
-server:
-  hosts:
-    - hostname: "localhost"
-      hooks:
-        - name: "your_hook"
-          matcher:
-            type: "path"
-            paths:
-              - "/api*"
+type: "path"
+paths:
+  - "/api*"
+  - "/healthz"
 ```
 
-### Configuration Options
+### Path Regex
 
-#### PathMatcherConfig
+- **pattern**: A regex pattern to match with request uri (required)
 
-- **matcher**: If set, this hook will be only called if request meet the criteria defined by him, otherwise, all requests will call this hook (optional)
-- **extensions**: Comma-separated list of file extensions to serve (required)
-- **directory**: The filesystem directory containing matchers files (required)
-- **index_files**: Optional list of index file names to serve for directory requests
+### Query
+
+- **paths**: A list of paths to match request uri against to (required)
+
+### Scheme
+
+- **paths**: A list of paths to match request uri against to (required)
+
+### Url Pattern
+
+- **paths**: A list of paths to match request uri against to (required)
+
+### Version
+
+- **paths**: A list of paths to match request uri against to (required)
 
 ## Runtime-Specific Modules
 

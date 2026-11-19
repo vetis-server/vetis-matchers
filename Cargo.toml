@@ -22,7 +22,7 @@ default = []
 cel = "0.16.0"
 compact_str = { version = "0.10.0", features = ["serde", "smallvec"] }
 http = "1.5.0"
-regex = "1.12.4"
+regex = "1.13.1"
 serde = { version = "1.0.228", features = ["derive"] }
 simplematch = "0.3.1"
 typetag = "0.2.21"
