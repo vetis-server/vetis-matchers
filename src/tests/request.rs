@@ -2,17 +2,23 @@ use crate::expr::extensions::request;
 use cel::{Context, Env, extensions::Network};
 use deboa_tokio::HttpBody;
 use http::{Method, Request as HttpRequest, Version};
-use std::{net::Ipv4Addr, sync::Arc};
+use std::{
+    net::{IpAddr, Ipv4Addr},
+    sync::Arc,
+};
 use vetis::Request;
 
 fn create_request<'a>() -> Request {
-    let inner_request = HttpRequest::builder()
+    let mut inner_request = HttpRequest::builder()
         .uri("https://www.google.com/")
         .version(Version::HTTP_11)
         .method(Method::GET)
         .body(HttpBody::empty())
         .expect("Coult not create request");
-    Request::new(inner_request).with_client_ip(Ipv4Addr::new(192, 168, 0, 1))
+    inner_request
+        .extensions_mut()
+        .insert(IpAddr::V4(Ipv4Addr::new(192, 168, 0, 1)));
+    Request::new(inner_request)
 }
 
 #[test]

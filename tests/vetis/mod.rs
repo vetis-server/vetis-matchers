@@ -101,16 +101,13 @@ async fn test_not_found() -> VetisTestResult<()> {
 
     let host_config = HostConfig::builder()
         .hostname("localhost")
-        .protos(&[Version::HTTP_11])
         .tls(tls_config)
-        .bind_addresses(&[(IpAddr::V4(Ipv4Addr::UNSPECIFIED), 9000)])
+        .add_proto(Version::HTTP_11)
+        .add_bind_address(Ipv4Addr::UNSPECIFIED, 9000)
         .build()?;
 
-    let virtual_host = Host::new(host_config).await?;
-
     let mut server = Vetis::builder()
-        .add_host(virtual_host)
-        .await?
+        .add_host(host_config)
         .build();
 
     server

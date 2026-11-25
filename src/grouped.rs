@@ -16,7 +16,7 @@ impl MatcherConfigBuilder {
     /// # Returns
     ///
     /// * `Self` - The builder.
-    pub fn add_matcher<M>(mut self, matcher: M) -> Self
+    pub fn matcher<M>(mut self, matcher: M) -> Self
     where
         M: vetis::matcher::MatcherConfig + 'static,
     {
