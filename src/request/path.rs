@@ -12,6 +12,10 @@ pub struct MatcherConfigBuilder {
 impl MatcherConfigBuilder {
     /// Allow set a path
     ///
+    /// # Arguments
+    ///
+    /// * `path` - Path to add to matcher
+    ///
     /// # Returns
     ///
     /// * `Self` - The builder.
@@ -36,12 +40,11 @@ impl MatcherConfigBuilder {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
-/// A struct with header matcher configuration.
+/// A struct with path matcher configuration.
 ///
 /// # Fields
 ///
-/// * `pattern` - Target uri to regex to matchw with.
-/// * `replacement` - The replacement uri.
+/// * `paths` - Paths to match request with.
 /// ```
 pub struct MatcherConfig {
     paths: Box<[Str]>,
@@ -72,7 +75,7 @@ impl MatcherConfig {
     ///
     /// # Returns
     ///
-    /// * `&Box<[Str]> ` - Header field.
+    /// * `&Box<[Str]> ` - List of paths.
     pub fn paths(&self) -> &Box<[Str]> {
         &self.paths
     }
@@ -81,7 +84,7 @@ impl MatcherConfig {
     ///
     /// # Returns
     ///
-    /// * `&Vec<String>` - List of paths.
+    /// * `&mut Box<[Str]>` - Mutable list of paths.
     pub fn paths_mut(&mut self) -> &mut Box<[Str]> {
         &mut self.paths
     }
@@ -94,7 +97,11 @@ pub struct PathMatcher {
 }
 
 impl PathMatcher {
-    /// Create a new header matcher
+    /// Create a new path matcher
+    ///
+    /// # Arguments
+    ///
+    /// * `config` - Matcher configuration
     pub fn new(config: MatcherConfig) -> Self {
         PathMatcher { config, program: None }
     }
